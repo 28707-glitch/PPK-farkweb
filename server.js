@@ -183,7 +183,7 @@ function publicUser(u) {
     name: u.name,
     grade: u.grade,
     room: u.room,
-    dutyDay: normalizeDutyDay(u.dutyDay) || "mon",
+    dutyDay: normalizeDutyDay(u.dutyDay) || weekdayKeyFromDateKey(todayKey()),
     dutyDayLabel: dutyDayLabel(u.dutyDay),
     role: u.role
   };
@@ -348,7 +348,7 @@ async function loadFromSheets() {
       active: parseBool(o.active, true),
       createdAt: clean(o.createdAt),
       updatedAt: clean(o.updatedAt),
-      dutyDay: normalizeDutyDay(o.dutyDay) || "mon"
+      dutyDay: normalizeDutyDay(o.dutyDay) || weekdayKeyFromDateKey(todayKey())
     });
   }
 
@@ -426,7 +426,7 @@ async function loadFromSheets() {
 async function saveUsers() {
   await writeSheet("Users", SHEET_HEADERS.Users, users
     .filter(u => u.role === "student" && !isAdminLogin(u.studentId))
-    .map(u => [u.userId, u.studentId, u.password, u.name, u.grade, u.room, "student", boolText(u.active !== false), u.createdAt || "", u.updatedAt || "", normalizeDutyDay(u.dutyDay) || "mon"]));
+    .map(u => [u.userId, u.studentId, u.password, u.name, u.grade, u.room, "student", boolText(u.active !== false), u.createdAt || "", u.updatedAt || "", normalizeDutyDay(u.dutyDay) || weekdayKeyFromDateKey(todayKey())]));
 }
 
 async function saveRecords() {
@@ -547,7 +547,7 @@ function appDataFor(user, params = {}) {
   if (user.role !== "admin") {
     grade = clean(user.grade);
     room = clean(user.room);
-    dutyDay = normalizeDutyDay(user.dutyDay) || "mon";
+    dutyDay = normalizeDutyDay(user.dutyDay) || weekdayKeyFromDateKey(todayKey());
     dateKey = dateKeyForDutyDay(dutyDay);
   } else {
     dutyDay = normalizeDutyDay(params.dutyDay) || weekdayKeyFromDateKey(dateKey);
@@ -816,7 +816,7 @@ async function handleAction(body = {}) {
     const user = requireAuth(body.token);
     if (user.role === "admin") throw new Error("แอดมินไม่สามารถเลือกเวรแทนนักเรียนจากหน้านี้ได้");
 
-    const dutyDay = normalizeDutyDay(user.dutyDay) || "mon";
+    const dutyDay = normalizeDutyDay(user.dutyDay) || weekdayKeyFromDateKey(todayKey());
     const dateKey = dateKeyForDutyDay(dutyDay);
     const grade = clean(user.grade);
     const room = clean(user.room);
